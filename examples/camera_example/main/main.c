@@ -60,7 +60,8 @@ static void wifi_init(void){
 static void sd_init(void){
  esp_vfs_fat_sdmmc_mount_config_t m={.format_if_mount_failed=false,.max_files=8,.allocation_unit_size=16*1024};
  sdmmc_host_t h=SDMMC_HOST_DEFAULT();sdmmc_slot_config_t s=SDMMC_SLOT_CONFIG_DEFAULT();s.width=1;
- ESP_ERROR_CHECK(esp_vfs_fat_sdmmc_mount("/sdcard",&h,&s,&m,NULL));
+ sdmmc_card_t *card=NULL;
+ ESP_ERROR_CHECK(esp_vfs_fat_sdmmc_mount("/sdcard",&h,&s,&m,&card));
  mkdir("/sdcard/recordings",0775);
 }
 static void close_seg(void){if(rf){fflush(rf);fclose(rf);rf=NULL;}}
