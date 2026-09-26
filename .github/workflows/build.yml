@@ -1,32 +1,38 @@
-name: Build examples
+name: Build ESP32-CAM
+
 on:
   push:
-    branches:
-    - master
-  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
 
 jobs:
-  build-examples:
-    name: Build for ${{ matrix.idf_target }} on ${{ matrix.idf_ver }}
+  build:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        idf_ver: ["release-v5.1", "release-v5.2", "release-v5.3", "release-v5.4", "release-v5.5", "release-v6.0", "latest"]
-        idf_target: ["esp32", "esp32s2", "esp32s3", "esp32c2", "esp32c3"]
-    container: espressif/idf:${{ matrix.idf_ver }}
     steps:
-      - uses: actions/checkout@v1
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          submodules: 'true'
-      - name: esp-idf build
-        env:
-          IDF_TARGET: ${{ matrix.idf_target }}
-        shell: bash
+          submodules: recursive
+
+      - name: Build ESP32 firmware
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.4
+          target: esp32
+          path: examples/camera_example
+
+      - name: Merge firmware into one BIN
         working-directory: examples/camera_example
         run: |
-          . ${IDF_PATH}/export.sh
-          export PEDANTIC_FLAGS="-DIDF_CI_BUILD -Werror -Werror=deprecated-declarations -Werror=unused-variable -Werror=unused-but-set-variable -Werror=unused-function"
-          export EXTRA_CFLAGS="${PEDANTIC_FLAGS} -Wstrict-prototypes"
-          export EXTRA_CXXFLAGS="${PEDANTIC_FLAGS}"
-          idf.py build
+          python -m pip install --upgrade esptool
+          python -m esptool merge_bin -o merged-flash.bin @build/flash_args
+
+      - name: Upload firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp32-cam-firmware
+          path: |
+            examples/camera_example/merged-flash.bin
+            examples/camera_example/build/bootloader/bootloader.bin
+            examples/camera_example/build/partition_table/partition-table.bin
+            examples/camera_example/build/camera_example.bin
