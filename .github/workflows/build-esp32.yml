@@ -1,0 +1,36 @@
+name: Build ESP32-CAM
+
+on:
+  push:
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build ESP-IDF project
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.4
+          target: esp32
+          path: examples/camera_example
+
+      - name: Merge firmware into one flashable BIN
+        working-directory: examples/camera_example
+        run: |
+          python -m pip install esptool
+          esptool merge_bin -o merged-flash.bin @build/flash_args
+
+      - name: Upload flashable firmware
+        uses: actions/upload-artifact@v4
+        with:
+          name: esp32-cam-firmware
+          path: |
+            examples/camera_example/merged-flash.bin
+            examples/camera_example/build/bootloader/bootloader.bin
+            examples/camera_example/build/partition_table/partition-table.bin
+            examples/camera_example/build/camera_example.bin
