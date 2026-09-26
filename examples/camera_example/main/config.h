@@ -1,6 +1,6 @@
 #pragma once
-#define WIFI_SSID "YOUR_WIFI_SSID"
-#define WIFI_PASSWORD "YOUR_WIFI_PASSWORD"
+#define WIFI_SSID "D-Link"
+#define WIFI_PASSWORD "matin1385"
 #define STATIC_IP "192.168.1.50"
 #define GATEWAY "192.168.1.1"
 #define SUBNET_MASK "255.255.255.0"
