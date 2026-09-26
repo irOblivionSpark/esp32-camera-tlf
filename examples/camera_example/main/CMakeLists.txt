@@ -1,1 +1,5 @@
-idf_component_register(SRCS main.c PRIV_INCLUDE_DIRS . REQUIRES nvs_flash esp_wifi esp_netif esp_event esp_http_server fatfs sdmmc esp_timer esp32-camera)
+idf_component_register(
+    SRCS main.c
+    PRIV_INCLUDE_DIRS .
+    PRIV_REQUIRES nvs_flash esp_psram esp_wifi esp_netif esp_event esp_http_server fatfs sdmmc esp_timer
+)
