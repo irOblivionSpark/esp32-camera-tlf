@@ -11,21 +11,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
-      - name: Build ESP-IDF project
+      - name: Build and merge firmware
         uses: espressif/esp-idf-ci-action@v1
         with:
           esp_idf_version: v5.4
           target: esp32
           path: examples/camera_example
+          command: idf.py build && cd build && esptool.py merge_bin -o ../merged-flash.bin @flash_args
 
-      - name: Merge firmware into one flashable BIN
-        working-directory: examples/camera_example
-        run: |
-          python -m pip install esptool
-          esptool merge_bin -o merged-flash.bin @build/flash_args
-
-      - name: Upload flashable firmware
+      - name: Upload firmware
         uses: actions/upload-artifact@v4
         with:
           name: esp32-cam-firmware
